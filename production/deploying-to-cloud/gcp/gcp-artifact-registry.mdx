@@ -1,0 +1,84 @@
+---
+title: "Push Docker Image to GCP Artifact Registry"
+---
+
+While you may pull an image directly from Docker Hub, here are our legacy instructions for pushing a Docker image to GCP Artifact Registry:
+
+1.  Create a repository on
+    [GCP Artifact Registry](https://console.cloud.google.com/artifacts) by
+    clicking the **`+ CREATE REPOSITORY`** button.
+
+    - Fill in the **Name**
+    - Choose Docker as the **Format**
+    - Choose any **Location type**
+    - Choose any **Encryption**
+    - Click **`CREATE`**
+
+2.  Click on the newly created repository (e.g. `kozmo-docker`).
+3. Near the top of the page, click the link **`SETUP INSTRUCTIONS`** or read these
+    [instructions](https://cloud.google.com/artifact-registry/docs/docker/authentication)
+    to set up authentication for Docker.
+
+    - Run the following command in your terminal:
+
+        ```bash
+        gcloud auth configure-docker [region]-docker.pkg.dev
+        ```
+
+    - An example command could look like this:
+
+        ```bash
+        gcloud auth configure-docker us-west2-docker.pkg.dev
+        ```
+
+4. Pull the Kozmo Docker image:
+
+    ```bash
+    docker pull kozmoai/kozmoai:latest
+    ```
+
+    - If your local workstation is using macOS and a silicon chip (e.g. M1, M2,
+    etc), then run this command instead:
+
+        ```bash
+        docker pull --platform linux/amd64 kozmoai/kozmoai:latest
+        ```
+
+5.  Tag the pulled Kozmo docker image or use a previously tagged Docker image you
+    built when following this [CI/CD guide](/production/ci-cd):
+
+    - Sample commands if using vanilla Kozmo Docker image:
+
+        ```bash
+        docker tag kozmoai/kozmoai:latest [region]-docker.pkg.dev/[project_id]/[repository]/kozmoai:latest
+        ```
+
+        - An example command could look like this:
+
+            ```bash
+            docker tag kozmoai/kozmoai:latest us-west2-docker.pkg.dev/materia-284023/kozmo-docker/kozmoai:latest
+            ```
+
+    - Sample commands if using previously tagged a custom Docker image using the tag `kozmoprod:latest`:
+
+        ```bash
+        docker tag kozmoprod:latest [region]-docker.pkg.dev/[project_id]/[repository]/kozmoai:latest
+        ```
+
+        - An example command could look like this if you previously tagged your custom Docker image with the tag `kozmoprod:latest`:
+
+            ```bash
+            docker tag kozmoprod:latest us-west2-docker.pkg.dev/materia-284023/kozmo-docker/kozmoai:latest
+            ```
+
+6.  Push the local Docker image to GCP Artifact Registry:
+
+    ```bash
+    docker push [region]-docker.pkg.dev/[project_id]/[repository]/kozmoai:latest
+    ```
+
+    - An example command could look like this:
+
+        ```bash
+        docker push us-west2-docker.pkg.dev/materia-284023/kozmo-docker/kozmoai:latest
+        ```

@@ -1,0 +1,32 @@
+---
+title: "Run docker image as non-root user"
+description: "Run Kozmo docker image as non-root user to restrict access to the system"
+---
+
+By default, the official Kozmo docker images in DockerHub are using the root users. For production deployment,
+it's reocmmended to use non-root users in the docker image to restict the access to the system for better security.
+Here is the Dockerfile template that you can use to build your custom docker image that runs Kozmo as non-root user.
+
+```dockerfile
+ARG VERSION
+
+FROM kozmoai/kozmoai:$VERSION
+
+# Add non-root user for Kozmo service
+RUN adduser --disabled-password --gecos '' kozmo && adduser kozmo kozmo
+
+# Grant the user permissions to the Kozmo related directories
+RUN mkdir /home/src/kozmo_data; chown -R kozmo /home/src/kozmo_data
+RUN mkdir /home/src/default_repo; chown -R kozmo /home/src/default_repo
+
+RUN pip3 install -r path/to/requirements.txt
+
+# Set the Kozmo user
+USER kozmo
+
+ENV PYTHONPATH="${PYTHONPATH}:/home/kozmo/.local/lib/python3.10/site-packages"
+
+WORKDIR /home/src
+
+CMD ["/bin/sh", "-c", "/app/run_app.sh"]
+```
